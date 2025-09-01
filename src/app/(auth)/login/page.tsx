@@ -1,5 +1,9 @@
 export default function login(){
     return(
-        <h1>Olá, Mundo!</h1>
+        <body>
+            <footer></footer>
+            <main><h1>Página de login</h1></main>
+            <footer></footer>
+        </body>
     )
 }
