@@ -1,15 +1,67 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  // O Prisma vai gerar o código do cliente nesta pasta. 
+  // Foi por isso que tivemos que adicionar /src/generated no .gitignore e .eslintrc.mjs
+  output   = "../src/generated/prisma" 
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// O coração do sistema. Aqui ficam as informações dos seus usuários.
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  username      String?   @unique // Nome de usuário que pode ser usado para login
+  email         String?   @unique // E-mail, que precisa ser único
+  emailVerified DateTime?
+  passwordHash  String?   // Onde guardamos a senha CRIPTOGRAFADA. Nunca a senha real!
+  image         String?
+
+  // Relações: um usuário pode ter várias contas (OAuth) e várias sessões ativas
+  accounts      Account[]
+  sessions      Session[]
+}
+
+// O "passaporte" do usuário. Usado para login com Google, GitHub, etc. no futuro.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// O registro de quem está "dentro de casa". Guarda as sessões de login ativas.
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Para logins "mágicos" por e-mail no futuro.
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
