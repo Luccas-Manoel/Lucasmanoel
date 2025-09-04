@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { z } from "zod";
-import prisma from "@/app/lib/prisma";
+import prisma from "@/lib/prisma";
 import { compare } from "bcryptjs";
 
 // Schema de validação dos dados de Login
